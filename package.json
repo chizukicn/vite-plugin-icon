@@ -9,7 +9,6 @@
     "dist/"
   ],
   "scripts": {
-    "postinstall": "husky install",
     "stub": "unbuild --stub",
     "build": "unbuild",
     "lint": "eslint . --ext .js,.ts",
