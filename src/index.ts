@@ -16,7 +16,7 @@ export interface IconComponentProps {
   color?: string
 }
 
-export function createIconComponentPlugin(options: IconComponentOptions): Plugin {
+export function createIconComponentPlugin(options: IconComponentOptions = {}): Plugin {
   const suffix = options.suffix ?? "?icon";
   return {
     name: "vite-plugin-icon-component",
