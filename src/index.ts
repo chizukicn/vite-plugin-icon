@@ -1,9 +1,25 @@
 import fs from "fs";
 import type { Plugin } from "vite";
 
-export function createIconComponentPlugin(): Plugin {
+export interface IconComponentOptions {
+  /**
+   * @default "?icon"
+   */
+  suffix?: string
+}
+
+export interface IconComponentProps {
+  tag?: string
+  size?: string | number
+  width?: string | number
+  height?: string | number
+  color?: string
+}
+
+export function createIconComponentPlugin(options: IconComponentOptions): Plugin {
+  const suffix = options.suffix ?? "?icon";
   return {
-    name: "vite-plugin-vue-icon-component",
+    name: "vite-plugin-icon-component",
     resolveId(id) {
       if (id === "@curev/icon-component") {
         return id;
@@ -12,7 +28,7 @@ export function createIconComponentPlugin(): Plugin {
     load(id) {
       if (id === "@curev/icon-component") {
         return `
-        import { defineComponent, h } from "vue";
+        import { h } from "vue";
 
         export function createIconComponent(url){
          return (props)=>{
@@ -23,6 +39,7 @@ export function createIconComponentPlugin(): Plugin {
             const width = typeof propWidth === "number" ? propWidth + "px" : propWidth;
             const propHeight = props.height ?? size;
             const height = typeof propHeight === "number" ? propHeight + "px" : propHeight;
+            const color = props.color ?? "currentColor";
 
             return h(tag, {
               style: {
@@ -31,7 +48,7 @@ export function createIconComponentPlugin(): Plugin {
                 "mask-size": "100% 100%",
                 "-webkit-mask": "var(--svg-icon) no-repeat",
                 "-webkit-mask-size": "100% 100%",
-                "background-color": "currentColor",
+                "background-color": color,
                 "display": "inline-block",
                 "width": width,
                 "height": height,
@@ -42,14 +59,14 @@ export function createIconComponentPlugin(): Plugin {
       }
     },
     async transform(code, id) {
-      if (!id.endsWith("?icon-component")) {
+      if (!id.endsWith(suffix)) {
         return;
       }
       const svg = await this.resolve(id);
       if (!svg) {
         return;
       }
-      const svgCode = await fs.promises.readFile(svg.id.replace("?icon-component", ""), { encoding: "utf-8" });
+      const svgCode = await fs.promises.readFile(svg.id.replace(suffix, ""), { encoding: "utf-8" });
       const svgCodeMin = svgCode.replace(/\s+/g, " ").trim();
       const url = `url('data:image/svg+xml,${encodeURIComponent(svgCodeMin)}')`;
       return `
